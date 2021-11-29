@@ -7,7 +7,7 @@ pub struct Temp {
     pub m: i32,
     pub d: i32,
     pub h: i32,
-    pub averageTemp: f32,
+    pub averageTemp: String,
 }
 
 impl Default for Temp {
@@ -17,7 +17,7 @@ impl Default for Temp {
             m: 0,
             d: 0,
             h: 0,
-            averageTemp: 0.0,
+            averageTemp: String::new(),
         }
     }
 }

@@ -1,7 +1,7 @@
 use std::sync::{Arc, Mutex};
 use warp::Filter;
 
-use crate::routes::{add_temp_post, last_temp_get, temps_get};
+use routes::{add_temp_post, last_temp_get, temps_get};
 use mongo::Mongo;
 use temp::Temp;
 
@@ -37,10 +37,10 @@ async fn main() -> mongodb::error::Result<()> {
         .and_then(last_temp_get);
 
     let cors = warp::cors()
-        .allow_origin("http://localhost:3000")
+        .allow_any_origin()
         .allow_methods(vec!["GET", "POST"]);
     let routes = add_temp.or(get_temps).or(temps).with(cors);
-    warp::serve(routes).run(([127, 0, 0, 1], 8080)).await;
+    warp::serve(routes).run(([192, 168, 0, 110], 8080)).await;
 
     Ok(())
 }

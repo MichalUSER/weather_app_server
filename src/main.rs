@@ -17,8 +17,8 @@ type SharedTemp = Arc<Mutex<Temp>>;
 async fn main() -> mongodb::error::Result<()> {
     load();
     let m = Mongo::new().await?;
+    let last_temp = Arc::new(Mutex::new(m.last_temp.clone()));
     let m_filter = warp::any().map(move || m.clone());
-    let last_temp = Arc::new(Mutex::new(Temp::default()));
     let last_temp_filter = warp::any().map(move || last_temp.clone());
 
     let add_temp = warp::post()
@@ -43,7 +43,6 @@ async fn main() -> mongodb::error::Result<()> {
         .allow_any_origin()
         .allow_methods(vec!["GET", "POST"]);
     let routes = add_temp.or(get_temps).or(temps).with(cors);
-    //warp::serve(routes).run(([192, 168, 0, 110], 8080)).await;
     warp::serve(routes).run(url()).await;
 
     Ok(())

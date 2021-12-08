@@ -9,6 +9,16 @@ use crate::load_env::{mongodb_name, mongodb_uri};
 pub struct Mongo {
     client: Client,
     curr_coll: Collection<Temp>,
+    last_temp_coll: Collection<Temp>,
+    pub last_temp: Temp,
+}
+
+async fn get_last_temp(coll: Collection<Temp>) -> mongodb::error::Result<Temp> {
+    let cursor = match coll.find_one(doc! {}, None).await {
+        Ok(cursor) => cursor,
+        Err(e) => return Err(e),
+    };
+    Ok(cursor.unwrap())
 }
 
 impl Mongo {
@@ -19,19 +29,23 @@ impl Mongo {
             .database("weather-app")
             .run_command(doc! {"ping": 1}, None)
             .await?;
-        let curr_coll = client.database("weather-app").collection::<Temp>(mongodb_name().as_str());
-        Ok(Self { client, curr_coll })
+        let db = client.database("weather-app");
+        let curr_coll = db.collection::<Temp>(mongodb_name().as_str());
+        let last_temp_coll = db.collection::<Temp>("last_temp");
+        let last_temp = get_last_temp(last_temp_coll.clone()).await.unwrap();
+        Ok(Self { client, curr_coll, last_temp_coll, last_temp })
     }
 
     pub async fn add_temp(&self, temp: Temp) -> mongodb::error::Result<()> {
-        let curr_coll_ref = self.curr_coll.clone();
-        curr_coll_ref.insert_one(temp, None).await?;
+        self.curr_coll.clone().insert_one(temp.clone(), None).await?;
+        self.last_temp_coll.clone().replace_one(doc! {}, temp.clone(), None).await?;
+
         Ok(())
     }
 
     pub async fn find_temps(&self, day: i32) -> mongodb::error::Result<Vec<Temp>> {
         let filter = doc! { "d": day };
-        let cursor = match self.curr_coll.find(filter, None).await {
+        let cursor = match self.curr_coll.clone().find(filter, None).await {
             Ok(cursor) => cursor,
             Err(_) => return Ok(vec![]),
         };

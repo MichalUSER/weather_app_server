@@ -1,18 +1,21 @@
 use std::sync::{Arc, Mutex};
 use warp::Filter;
 
-use routes::{add_temp_post, last_temp_get, temps_get};
 use mongo::Mongo;
+use routes::{add_temp_post, last_temp_get, temps_get};
 use temp::Temp;
+use load_env::{load, url};
 
 mod mongo;
 mod routes;
 mod temp;
+mod load_env;
 
 type SharedTemp = Arc<Mutex<Temp>>;
 
 #[tokio::main]
 async fn main() -> mongodb::error::Result<()> {
+    load();
     let m = Mongo::new().await?;
     let m_filter = warp::any().map(move || m.clone());
     let last_temp = Arc::new(Mutex::new(Temp::default()));
@@ -40,7 +43,8 @@ async fn main() -> mongodb::error::Result<()> {
         .allow_any_origin()
         .allow_methods(vec!["GET", "POST"]);
     let routes = add_temp.or(get_temps).or(temps).with(cors);
-    warp::serve(routes).run(([192, 168, 0, 110], 8080)).await;
+    //warp::serve(routes).run(([192, 168, 0, 110], 8080)).await;
+    warp::serve(routes).run(url()).await;
 
     Ok(())
 }

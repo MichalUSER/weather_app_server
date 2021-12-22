@@ -9,15 +9,3 @@ pub struct Temp {
     pub h: i32,
     pub averageTemp: String,
 }
-
-impl Default for Temp {
-    fn default() -> Self {
-        Temp {
-            y: 0,
-            m: 0,
-            d: 0,
-            h: 0,
-            averageTemp: String::new(),
-        }
-    }
-}

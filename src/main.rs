@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex};
 use warp::Filter;
 
 use mongo::Mongo;
-use routes::{add_temp_post, last_temp_get, temps_get};
+use routes::{add_temp_post, add_last_temp_post, last_temp_get, temps_get};
 use temp::Temp;
 use load_env::{load, url};
 
@@ -28,6 +28,13 @@ async fn main() -> mongodb::error::Result<()> {
         .and(last_temp_filter.clone())
         .and_then(add_temp_post);
 
+    let add_last_temp = warp::post()
+        .and(warp::path("add_last_temp"))
+        .and(warp::body::json())
+        .and(m_filter.clone())
+        .and(last_temp_filter.clone())
+        .and_then(add_last_temp_post);
+
     let temps = warp::get()
         .and(warp::path("temps"))
         .and(m_filter.clone())
@@ -42,7 +49,7 @@ async fn main() -> mongodb::error::Result<()> {
     let cors = warp::cors()
         .allow_any_origin()
         .allow_methods(vec!["GET", "POST"]);
-    let routes = add_temp.or(get_temps).or(temps).with(cors);
+    let routes = add_temp.or(add_last_temp).or(get_temps).or(temps).with(cors);
     warp::serve(routes).run(url()).await;
 
     Ok(())

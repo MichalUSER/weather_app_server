@@ -43,6 +43,12 @@ impl Mongo {
         Ok(())
     }
 
+    pub async fn add_last_temp(&self, temp: Temp) -> mongodb::error::Result<()> {
+        self.last_temp_coll.clone().replace_one(doc! {}, temp.clone(), None).await?;
+
+        Ok(())
+    }
+
     pub async fn find_temps(&self, day: i32) -> mongodb::error::Result<Vec<Temp>> {
         let filter = doc! { "d": day };
         let cursor = match self.curr_coll.clone().find(filter, None).await {

@@ -2,7 +2,7 @@
 
 [![](https://tokei.rs/b1/github/MichalUSER/weather_app_server)](https://github.com/MichalUSER/weather_app_server)
 
-### tech info
+## tech info
 using rust, [warp](https://github.com/seanmonstar/warp) and mongodb
 
 <br>

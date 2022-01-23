@@ -1,4 +1,4 @@
-# weather forecast server
+# weather app server
 
 [![](https://tokei.rs/b1/github/MichalUSER/weather_app_server)](https://github.com/MichalUSER/weather_app_server)
 

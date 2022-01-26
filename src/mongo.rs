@@ -1,6 +1,7 @@
 use futures::stream::TryStreamExt;
 use mongodb::bson::doc;
 use mongodb::{options::ClientOptions, Client, Collection};
+use chrono::prelude::*;
 
 use crate::Temp;
 use crate::load_env::{mongodb_name, mongodb_uri};
@@ -50,7 +51,8 @@ impl Mongo {
     }
 
     pub async fn find_temps(&self, day: i32) -> mongodb::error::Result<Vec<Temp>> {
-        let filter = doc! { "d": day };
+        let t = Utc::now().date();
+        let filter = doc! { "d": day, "m": t.month() };
         let cursor = match self.curr_coll.clone().find(filter, None).await {
             Ok(cursor) => cursor,
             Err(_) => return Ok(vec![]),

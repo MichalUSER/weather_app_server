@@ -21,8 +21,8 @@ pub async fn add_last_temp_post(
     Ok(warp::reply::with_status("ok", StatusCode::OK))
 }
 
-pub async fn temps_get(m: Mongo, day: i32) -> Result<impl warp::Reply, warp::Rejection> {
-    return match m.find_temps(day).await {
+pub async fn temps_get(m: Mongo, month: i32, day: i32) -> Result<impl warp::Reply, warp::Rejection> {
+    return match m.find_temps(month, day).await {
         Ok(temps) => Ok(warp::reply::json(&temps)),
         Err(_) => Err(warp::reject()),
     };

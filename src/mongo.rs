@@ -55,7 +55,7 @@ impl Mongo {
     pub async fn last_week(&self) -> mongodb::error::Result<Vec<Temp>> {
         let now = Utc::now();
         let week_ago = now - Duration::days(7);
-        let filter = doc! { "d": { "$gt": week_ago.day(), "$lt": now.day() }, "m": { "$in": [ week_ago.month(), now.month() ] } };
+        let filter = doc! { "d": { "$gt": week_ago.day() - 1, "$lt": now.day() + 1 }, "m": { "$in": [ week_ago.month(), now.month() ] } };
         let cursor = match self.curr_coll.clone().find(filter, None).await {
             Ok(cursor) => cursor,
             Err(e) => return Err(e),

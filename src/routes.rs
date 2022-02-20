@@ -31,3 +31,10 @@ pub async fn temps_get(m: Mongo, month: i32, day: i32) -> Result<impl warp::Repl
 pub async fn last_temp_get(last_temp: SharedTemp) -> Result<impl warp::Reply, warp::Rejection> {
     Ok(warp::reply::json(&*last_temp))
 }
+
+pub async fn last_week_get(m: Mongo) -> Result<impl warp::Reply, warp::Rejection> {
+    return match m.last_week().await {
+        Ok(temps) => Ok(warp::reply::json(&temps)),
+        Err(_) => Err(warp::reject()),
+    };
+}

@@ -1,3 +1,5 @@
+use chrono::Duration;
+use chrono::prelude::*;
 use futures::stream::TryStreamExt;
 use mongodb::bson::doc;
 use mongodb::{options::ClientOptions, Client, Collection};
@@ -6,6 +8,7 @@ use crate::Temp;
 use crate::load_env::{mongodb_name, mongodb_uri};
 
 #[derive(Clone)]
+#[allow(dead_code)]
 pub struct Mongo {
     client: Client,
     curr_coll: Collection<Temp>,
@@ -47,6 +50,17 @@ impl Mongo {
         self.last_temp_coll.clone().replace_one(doc! {}, temp.clone(), None).await?;
 
         Ok(())
+    }
+
+    pub async fn last_week(&self) -> mongodb::error::Result<Vec<Temp>> {
+        let now = Utc::now();
+        let week_ago = now - Duration::days(7);
+        let filter = doc! { "d": { "$gt": week_ago.day(), "$lt": now.day() }, "m": { "$in": [ week_ago.month(), now.month() ] } };
+        let cursor = match self.curr_coll.clone().find(filter, None).await {
+            Ok(cursor) => cursor,
+            Err(e) => return Err(e),
+        };
+        Ok(cursor.try_collect().await.unwrap_or_else(|_| vec![]))
     }
 
     pub async fn find_temps(&self, month: i32, day: i32) -> mongodb::error::Result<Vec<Temp>> {

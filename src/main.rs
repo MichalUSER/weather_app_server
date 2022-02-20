@@ -3,7 +3,7 @@ use warp::Filter;
 
 use load_env::{load, url};
 use mongo::Mongo;
-use routes::{add_last_temp_post, add_temp_post, last_temp_get, temps_get};
+use routes::{add_last_temp_post, add_temp_post, last_temp_get, last_week_get, temps_get};
 use temp::Temp;
 
 mod load_env;
@@ -42,6 +42,11 @@ async fn main() -> mongodb::error::Result<()> {
         .and(warp::path::param())
         .and_then(temps_get);
 
+    let last_week = warp::get()
+        .and(warp::path("last_week"))
+        .and(m_filter.clone())
+        .and_then(last_week_get);
+
     let get_temps = warp::get()
         .and(warp::path("last_temp"))
         .and(last_temp_filter.clone())
@@ -54,6 +59,7 @@ async fn main() -> mongodb::error::Result<()> {
         .or(add_last_temp)
         .or(get_temps)
         .or(temps)
+        .or(last_week)
         .with(cors);
     warp::serve(routes).run(url()).await;
 

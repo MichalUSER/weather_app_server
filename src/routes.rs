@@ -38,3 +38,10 @@ pub async fn last_week_get(m: Mongo) -> Result<impl warp::Reply, warp::Rejection
         Err(_) => Err(warp::reject()),
     };
 }
+
+pub async fn last_days_get(m: Mongo, days: i64) -> Result<impl warp::Reply, warp::Rejection> {
+    return match m.last_days(days).await {
+        Ok(temps) => Ok(warp::reply::json(&temps)),
+        Err(_) => Err(warp::reject()),
+    };
+}
